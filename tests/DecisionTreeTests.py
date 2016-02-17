@@ -6,23 +6,6 @@ import numpy as np
 
 class DecisionTreeTests(unittest.TestCase):
 
-    """
-    def test_gini(self):
-        tree = DecisionTree()
-
-        y = np.asarray([1,1,1,1,1,1,1])
-        gini = tree._gini(y)
-        self.assertTrue(gini == 0)
-
-        y = np.asarray([1,1,1,1,2,2,2,2])
-        gini = tree._gini(y)
-        self.assertTrue(gini == 0.5)
-
-        y = np.asarray([1,2,3,1,2,3])
-        gini = tree._gini(y)
-        self.assertTrue(round(gini, 3) == 0.667)
-    """
-
     def test_is_categorial(self):
         tree = DecisionTree()
 

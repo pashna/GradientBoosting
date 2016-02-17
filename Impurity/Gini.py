@@ -16,7 +16,9 @@ class Gini(Impurity):
         :return:
         """
         y = np.append(y_left, y_right)
-        return self.calculate_node(y) - ( float(len(y_left))*self.calculate_node(y_left) - (float(len(y_right)))*self.calculate_node(y_right) ) / len(y)
+        left_gini = float(len(y_left))*self.calculate_node(y_left)/len(y)
+        right_gini = (float(len(y_right))*self.calculate_node(y_right))/len(y)
+        return self.calculate_node(y) -  right_gini - left_gini
 
 
     def calculate_node(self, y):

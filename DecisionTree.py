@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
-
 __author__ = 'popka'
+
+
 import numpy as np
 from random import randint
+from Impurity.Gini import Gini
 from Node import Node, Predicate
 
 class DecisionTree():
 
-    def __init__(self, max_depth = 10, is_classification = True, criterion=None):
+    def __init__(self, max_depth = 10, is_classification = True, impurity=None):
         self._max_depth = max_depth
-        #self._criterion = criterion
+
         self._is_classification = is_classification
+        if impurity is None:
+            self._impurity = Gini()
+        else:
+            self._impurity = impurity
 
         self._root = None
         self._depth = 0
