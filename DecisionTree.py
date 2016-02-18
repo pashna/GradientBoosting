@@ -14,12 +14,12 @@ from Splitter import Splitter
 
 class DecisionTree():
 
-    def __init__(self, is_classification=True, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_feature=10):
+    def __init__(self, is_classification=True, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15):
 
         self._impurity = impurity
         self._is_classification = is_classification
         self._min_samples_leaf = min_samples_leaf
-        self._max_features = max_feature
+        self._max_features = max_features
         self._min_impurity = min_impurity
 
         if self._is_classification:
@@ -117,33 +117,31 @@ class DecisionTree():
         :param y:
         :return:
         """
-        try:
-            feature_indexes = DecisionTree.rsm(max(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
-            max_delta_impurity = None
 
-            delta_imp_debug = []
-            for feature_index in feature_indexes:
-                x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
+        feature_indexes = DecisionTree.rsm(min(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
+        max_delta_impurity = None
 
-                if DecisionTree._is_categorical(x):
-                    type = Predicate.CAT
-                    value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
+        delta_imp_debug = []
+        for feature_index in feature_indexes:
+            x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
 
-                else:
-                    type = Predicate.QUAN
-                    value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
+            if DecisionTree._is_categorical(x):
+                type = Predicate.CAT
+                value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
 
-                delta_imp_debug.append(delta_impurity)
+            else:
+                type = Predicate.QUAN
+                value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
 
-                if max_delta_impurity < delta_impurity:
-                    max_delta_impurity = delta_impurity
-                    best_feature_index = feature_index
-                    best_value = value
+            delta_imp_debug.append(delta_impurity)
 
-                return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+            if max_delta_impurity < delta_impurity:
+                max_delta_impurity = delta_impurity
+                best_feature_index = feature_index
+                best_value = value
+                print best_value
 
-        except Exception:
-            print delta_imp_debug
+            return Predicate(type=type, feature_id=best_feature_index, value=best_value)
 
 
 
