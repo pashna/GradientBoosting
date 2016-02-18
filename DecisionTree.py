@@ -7,6 +7,7 @@ __author__ = 'popka'
 import numpy as np
 from random import randint
 from Impurity.Gini import Gini
+from Impurity.RegressionImpurity import RegressionImpurity
 from Node import Node
 from Splitter import Splitter
 
@@ -15,28 +16,29 @@ class DecisionTree():
 
     def __init__(self, is_classification=True, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_feature=10):
 
+        self._impurity = impurity
         self._is_classification = is_classification
-
-        if impurity is None:
-            self._impurity = Gini()
-        else:
-            self._impurity = impurity
-
-        self._min_impurity = min_impurity
-        self._root = None
-        self._splitter = Splitter()
         self._min_samples_leaf = min_samples_leaf
         self._max_features = max_feature
+        self._min_impurity = min_impurity
+
+        if self._is_classification:
+            if impurity is None:
+                self._impurity = Gini()
+
+        else:
+            if impurity is None:
+                self._impurity = RegressionImpurity()
+
+        self._root = None
+        self._splitter = Splitter()
 
 
     def fit(self, X_, y_):
 
         y = np.copy(np.asarray(y_))
         X = np.copy(np.matrix(X_))
-
-        if (self._is_classification):
-            #self._classes = np.unique(y) # Возможно, не нужно делать свойством объекта
-            self._build_tree(X, y)
+        self._build_tree(X, y)
 
 
     def _build_tree(self, X, y):
@@ -71,8 +73,7 @@ class DecisionTree():
                 Если оптимальным считается разделить узел так, что в одной части будут значения, а в другой - нет
                 (это может случится, когда все значения признака одинаковые), считаем, что это лист
                 """
-                counts = np.bincount(y)
-                value = np.argmax(counts)
+                value = self._select_leaf_value(y)
                 return Node(predicate=None, is_leaf=True, value=value)
 
             node.left_node = self._create_node(X_left, y_left)
@@ -80,12 +81,23 @@ class DecisionTree():
 
             return node
         else:
-            counts = np.bincount(y)
-            value = np.argmax(counts)
+
+            value = self._select_leaf_value(y)
             return Node(predicate=None, is_leaf=True, value=value)
 
 
+    def _select_leaf_value(self, y):
+        """
+        Функция вычисляет и возвращает значение, которое будет находиться в листе
+        :param y:
+        """
+        if self._is_classification:
+            counts = np.bincount(y)
+            value = np.argmax(counts)
+        else:
+            value = np.mean(y)
 
+        return value
 
     def _is_stop_criterion(self, y):
         """
@@ -105,27 +117,33 @@ class DecisionTree():
         :param y:
         :return:
         """
+        try:
+            feature_indexes = DecisionTree.rsm(max(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
+            max_delta_impurity = None
 
-        feature_indexes = DecisionTree.rsm(max(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
-        max_delta_impurity = -1
+            delta_imp_debug = []
+            for feature_index in feature_indexes:
+                x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
 
-        for feature_index in feature_indexes:
-            x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
+                if DecisionTree._is_categorical(x):
+                    type = Predicate.CAT
+                    value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
 
-            if DecisionTree._is_categorical(x):
-                type = Predicate.CAT
-                value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
+                else:
+                    type = Predicate.QUAN
+                    value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
 
-            else:
-                type = Predicate.QUAN
-                value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
+                delta_imp_debug.append(delta_impurity)
 
-            if max_delta_impurity < delta_impurity:
-                max_delta_impurity = delta_impurity
-                best_feature_index = feature_index
-                best_value = value
+                if max_delta_impurity < delta_impurity:
+                    max_delta_impurity = delta_impurity
+                    best_feature_index = feature_index
+                    best_value = value
 
-        return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+                return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+
+        except Exception:
+            print delta_imp_debug
 
 
 

@@ -3,20 +3,23 @@ __author__ = 'popka'
 
 
 import numpy as np
+
 import pandas as pd
 import matplotlib.pylab as pl
 import sklearn.cross_validation as cv
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from DecisionTree import DecisionTree
-
+from sklearn.metrics import mean_squared_error as mse
 
 FOLDER = "data/"
-FILES = ["iris.txt", "bezdekIris.txt", "wine.txt", "bupa.txt", "spam"]
-FILE = FILES[4]
+FILES = [
+        "iris.txt", "bezdekIris.txt", "wine.txt", "bupa.txt", "housing.txt", "spam"
+        ]
+FILE = "housing.txt"
 
 # Подготавливаем признаки и целевую функцию
-if FILE in FILES[:4]:
+if FILE in FILES[:5]:
 
     df = pd.read_csv(FOLDER+FILE, sep=",", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
 
@@ -35,6 +38,11 @@ if FILE in FILES[:4]:
         X = df[[0,1,2,3,4,5]].as_matrix()
         y = df[6]
 
+    if FILE == FILES[4]:
+        df = pd.read_csv(FOLDER+FILE, sep=" ", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
+        X = df[df.columns[1:]].as_matrix()
+        y = df[df.columns[0]].as_matrix()
+
     x_train, x_test, y_train, y_test = cv.train_test_split(X, y, test_size=0.25)
 
 else:
@@ -46,9 +54,7 @@ else:
     x_test = df_test[df_test.columns[1:]].as_matrix()
     y_test = df_test[df_test.columns[0]].as_matrix()
 
-print "Dataset just had been splitted"
-
-my_tree = DecisionTree()
+my_tree = DecisionTree(is_classification=False)
 my_tree.fit(x_train, y_train)
 y_predicted = my_tree.predict(x_test)
-print accuracy_score(y_test, y_predicted)
+print mse(y_test, y_predicted)

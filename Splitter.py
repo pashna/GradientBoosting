@@ -55,7 +55,7 @@ class Splitter():
         """
         current = min(x)
         end = max(x)
-        step = float(end-current)/100
+        step = float(end-current)/30
 
         while (current < end):
             y_left = y[x<=current]
