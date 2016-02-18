@@ -37,9 +37,11 @@ class Splitter():
         max_impurity = -1
         best_value = 0
 
+        """
         argsort = x.argsort()
         x = x[argsort]
         y = y[argsort]
+
 
         for value in x:
             y_left = y[x<=value]
@@ -50,11 +52,21 @@ class Splitter():
             if imp > max_impurity:
                 max_impurity = imp
                 best_value = value
+        """
+        current = min(x)
+        end = max(x)
+        step = float(end-current)/100
+
+        while (current < end):
+            y_left = y[x<=current]
+            y_right = y[x>current]
+
+            imp = impurity.calculate_split(y_left, y_right)
+
+            if imp > max_impurity:
+                max_impurity = imp
+                best_value = current
+
+            current += step
 
         return best_value, max_impurity
-
-
-
-
-
-

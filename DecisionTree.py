@@ -42,9 +42,7 @@ class DecisionTree():
     def _build_tree(self, X, y):
 
         if not self._is_stop_criterion(y) > 0:
-            #print "select_predicate started"
             predicate = self.select_predicate(X, y)
-            #print "select_predicate stopped"
             self._root = Node(predicate=predicate)
 
             X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
@@ -116,15 +114,11 @@ class DecisionTree():
 
             if DecisionTree._is_categorical(x):
                 type = Predicate.CAT
-                print "categorial started"
                 value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
-                print "categorial stopped"
 
             else:
                 type = Predicate.QUAN
-                print "quantitative started"
                 value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
-                print "quantitative stopped"
 
             if max_delta_impurity < delta_impurity:
                 max_delta_impurity = delta_impurity
