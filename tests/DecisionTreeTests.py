@@ -20,3 +20,22 @@ class DecisionTreeTests(unittest.TestCase):
 
         y = np.asarray([100000002131, 12, 12])
         self.assertTrue(tree._is_categorical(y))
+
+
+
+    def test_decision_tree(self):
+        tree = DecisionTree()
+        X = np.asarray([[1, 1],[0, 2], [3, 2]])
+        y = np.asarray([0, 1, 1])
+
+        tree.fit(X_=X, y_=y)
+
+        self.assertTrue(tree.predict(np.asarray([[1,1]]))[0] == 0)
+
+
+    def test_is_stop_criterion(self):
+        tree = DecisionTree()
+
+        self.assertTrue(tree._is_stop_criterion(np.asarray([1])))
+        self.assertTrue(tree._is_stop_criterion(np.asarray([1, 1, 1, 1, 1])))
+        self.assertFalse(tree._is_stop_criterion(np.asarray([1, 1, 0, 0, 1])))

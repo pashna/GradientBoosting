@@ -14,7 +14,7 @@ class SpliterTests(unittest.TestCase):
         x = np.asarray([1,2,3,3,3,1,1,2])
         y = np.asarray([1,2,2,2,2,1,1,2])
 
-        best_c = splitter.split_categorial(x=x, y=y, impurity=gini)
+        best_c, max_impurity = splitter.split_categorial(x=x, y=y, impurity=gini)
         self.assertTrue(np.array_equal((best_c), np.asarray([2,3])) or np.array_equal((best_c), np.asarray([1])))
 
 
@@ -24,8 +24,6 @@ class SpliterTests(unittest.TestCase):
         x = np.asarray([5., 3., 10, -1, -10, -0.5])
         y = np.asarray([2, 2, 2, 1, 1, 1])
 
-        best_value = splitter.split_quantitative(x=x, y=y, impurity=gini)
+        best_value, max_impurity = splitter.split_quantitative(x=x, y=y, impurity=gini)
 
-        print y
-        print x
         self.assertTrue(best_value == -0.5)

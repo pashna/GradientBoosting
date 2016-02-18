@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from Predicate import Predicate
 
 __author__ = 'popka'
 from utils.Placement import Placement
 import numpy as np
-from Node import Predicate
 
 
 class Splitter():
@@ -13,6 +13,7 @@ class Splitter():
 
     @staticmethod
     def split_categorial(x, y, impurity):
+
         combiner = Placement(np.unique(x))
         max_impurity = -1
         best_c = []
@@ -27,7 +28,7 @@ class Splitter():
                 max_impurity = imp
                 best_c = c
 
-        return best_c
+        return best_c, max_impurity
 
 
     @staticmethod
@@ -39,6 +40,7 @@ class Splitter():
         #x = np.copy(x) ??? надо ???
         argsort = x.argsort()
         x = x[argsort]
+        #print len(y), len(x)
         y = y[argsort]
 
         for value in x:
@@ -50,7 +52,7 @@ class Splitter():
                 max_impurity = imp
                 best_value = value
 
-        return best_value
+        return best_value, max_impurity
 
 
 

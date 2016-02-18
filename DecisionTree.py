@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+from Predicate import Predicate
+
 __author__ = 'popka'
 
 
 import numpy as np
 from random import randint
 from Impurity.Gini import Gini
-from Node import Node, Predicate
+from Node import Node
+from Splitter import Splitter
+
 
 class DecisionTree():
 
@@ -20,40 +24,109 @@ class DecisionTree():
 
         self._root = None
         self._depth = 0
+        self._splitter = Splitter()
 
 
     def fit(self, X_, y_):
 
         y = np.copy(np.asarray(y_))
-        X = np.copy(np.asmatrix(X_))
+        X = np.copy(np.matrix(X_))
 
         if (self._is_classification):
-            self._classes = np.unique(y) # Возможно, не нужно делать свойством объекта
+            #self._classes = np.unique(y) # Возможно, не нужно делать свойством объекта
             self._build_tree(X, y)
 
 
     def _build_tree(self, X, y):
+
+        if not self._is_stop_criterion(y) > 0:
+            predicate = self.select_predicate(X, y)
+            self._root = Node(predicate=predicate)
+
+            X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
+            self._root.left_node = self._create_node(X_left, y_left)
+            self._root.right_node = self._create_node(X_right, y_right)
+        else:
+            self._root = Node(is_leaf=True, value=y[0])
+
+
+    def _create_node(self, X, y):
         """
         Построение дерева
         :param X:
         :param y:
         """
-        pass
+
+        if not self._is_stop_criterion(y) > 0:
+            predicate = self.select_predicate(X, y)
+            node = Node(predicate=predicate)
+            X_left, y_left, X_right, y_right = node.predicate.split_by_predicate(X, y)
+            #print len(X_left), len(y_left), '  ::  ',len(X_right), len(y_right)
+            node.left_node = self._create_node(X_left, y_left)
+            node.right_node = self._create_node(X_right, y_right)
+
+            return node
+        else:
+            return Node(predicate=None, is_leaf=True, value=y[0])
+
+
+
+
+    def _is_stop_criterion(self, y):
+        """
+        Критерий останова.
+        Пока прос
+        :param y:
+        :return:
+        """
+        return self._impurity.calculate_node(y) == 0
 
 
     def select_predicate(self, X, y):
+        """
+        Функция выбирает оптимальный предикат и возвращает его
+        :param X:
+        :param y:
+        :return:
+        """
 
         feature_indexes = DecisionTree.rsm(len(X[0])) # Массив индексов фичей (какие столбцы будем просматривать)
+        max_delta_impurity = -1
 
         for feature_index in feature_indexes:
-            feature_values = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
+            x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
 
-            if DecisionTree._is_categorical(feature_values):
-                pass
+            if DecisionTree._is_categorical(x):
+                type = Predicate.CAT
+                value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
 
             else:
-                pass
+                type = Predicate.QUAN
+                value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
 
+            if max_delta_impurity < delta_impurity:
+                max_delta_impurity = delta_impurity
+                best_feature_index = feature_index
+                best_value = value
+
+
+        return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+
+
+    def predict(self, X):
+        y = np.zeros(len(X))
+
+        for i in range(len(X)):
+            x = X[i]
+            node = self._root
+            while(not node.is_leaf):
+                node = node.get_next_node(x)
+            y[i] = node.value
+
+        if self._is_classification:
+            return y.astype(int)
+        else:
+            return y
 
     #TODO:
     """
