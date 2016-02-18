@@ -5,22 +5,50 @@ __author__ = 'popka'
 import numpy as np
 import pandas as pd
 import matplotlib.pylab as pl
-from DecisionTree import DecisionTree
 import sklearn.cross_validation as cv
+from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier
+from DecisionTree import DecisionTree
 
 
 FOLDER = "data/"
-FILE = "iris.txt"
-df = pd.read_csv(FOLDER+FILE, sep=",", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
-
+FILES = ["iris.txt", "bezdekIris.txt", "wine.txt", "bupa.txt", "spam"]
+FILE = FILES[4]
 
 # Подготавливаем признаки и целевую функцию
-if (FILE == "iris.txt"):
-    df[4] = pd.factorize(df[4])[0]
-    X = df[[0,1,2,3]].as_matrix()
-    y = df[4].as_matrix()
+if FILE in FILES[:4]:
 
-x_train, x_test, y_train, y_test = cv.train_test_split(X, y, test_size=0.25)
-tree = DecisionTree()
-tree.fit(x_train, y_train)
+    df = pd.read_csv(FOLDER+FILE, sep=",", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
 
+    if FILE in FILES[:2]:
+        # ИРИСЫ
+        df[4] = pd.factorize(df[4])[0]
+        X = df[[0,1,2,3]].as_matrix()
+        y = df[4].as_matrix()
+
+    if FILE == FILES[2]:
+        x_indexes = [x for x in range(1,14)]
+        X = df[x_indexes].as_matrix()
+        y = df[0].as_matrix()
+
+    if FILE == FILES[3]:
+        X = df[[0,1,2,3,4,5]].as_matrix()
+        y = df[6]
+
+    x_train, x_test, y_train, y_test = cv.train_test_split(X, y, test_size=0.25)
+
+else:
+
+    df_train = pd.read_csv(FOLDER+FILE+".train.txt", sep=" ", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
+    df_test = pd.read_csv(FOLDER+FILE+".test.txt", sep=" ", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
+    x_train = df_train[df_train.columns[1:]].as_matrix()
+    y_train = df_train[df_train.columns[0]].as_matrix()
+    x_test = df_test[df_test.columns[1:]].as_matrix()
+    y_test = df_test[df_test.columns[0]].as_matrix()
+
+print "Dataset just had been splitted"
+
+my_tree = DecisionTree()
+my_tree.fit(x_train, y_train)
+y_predicted = my_tree.predict(x_test)
+print accuracy_score(y_test, y_predicted)
