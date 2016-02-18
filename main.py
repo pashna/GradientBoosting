@@ -20,10 +20,7 @@ if (FILE == "iris.txt"):
     X = df[[0,1,2,3]].as_matrix()
     y = df[4].as_matrix()
 
-
-
 x_train, x_test, y_train, y_test = cv.train_test_split(X, y, test_size=0.25)
-
 tree = DecisionTree()
 tree.fit(x_train, y_train)
-print tree.predict(x_test)
+

@@ -37,15 +37,14 @@ class Splitter():
         max_impurity = -1
         best_value = 0
 
-        #x = np.copy(x) ??? надо ???
         argsort = x.argsort()
         x = x[argsort]
-        #print len(y), len(x)
         y = y[argsort]
 
         for value in x:
             y_left = y[x<=value]
             y_right = y[x>value]
+
             imp = impurity.calculate_split(y_left, y_right)
 
             if imp > max_impurity:

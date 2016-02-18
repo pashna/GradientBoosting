@@ -9,6 +9,8 @@ from random import randint
 from Impurity.Gini import Gini
 from Node import Node
 from Splitter import Splitter
+import traceback
+
 
 
 class DecisionTree():
@@ -61,7 +63,17 @@ class DecisionTree():
             predicate = self.select_predicate(X, y)
             node = Node(predicate=predicate)
             X_left, y_left, X_right, y_right = node.predicate.split_by_predicate(X, y)
-            #print len(X_left), len(y_left), '  ::  ',len(X_right), len(y_right)
+
+            if (len(y_left) == 0) or (len(y_right) == 0):
+                """
+                Если данные больше нельзя разделить. (все оставшиеся имеют одинаковый признак),
+                то считаем, что нашли узел, и выбираем значение узла как наиболее встречающееся
+                ПОКА РАНДОМ, ПОПРАВИТЬ СРАЗУ ЖЕ!
+                """
+                counts = np.bincount(y)
+                value = np.argmax(counts)
+                return Node(predicate=None, is_leaf=True, value=value)
+
             node.left_node = self._create_node(X_left, y_left)
             node.right_node = self._create_node(X_right, y_right)
 
@@ -89,28 +101,33 @@ class DecisionTree():
         :param y:
         :return:
         """
+        try:
+            feature_indexes = DecisionTree.rsm(len(X[0])) # Массив индексов фичей (какие столбцы будем просматривать)
+            max_delta_impurity = -1
 
-        feature_indexes = DecisionTree.rsm(len(X[0])) # Массив индексов фичей (какие столбцы будем просматривать)
-        max_delta_impurity = -1
+            for feature_index in feature_indexes:
+                x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
 
-        for feature_index in feature_indexes:
-            x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
+                if DecisionTree._is_categorical(x):
+                    type = Predicate.CAT
+                    value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
 
-            if DecisionTree._is_categorical(x):
-                type = Predicate.CAT
-                value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
+                else:
+                    type = Predicate.QUAN
+                    value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
 
-            else:
-                type = Predicate.QUAN
-                value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
-
-            if max_delta_impurity < delta_impurity:
-                max_delta_impurity = delta_impurity
-                best_feature_index = feature_index
-                best_value = value
+                if max_delta_impurity < delta_impurity:
+                    max_delta_impurity = delta_impurity
+                    best_feature_index = feature_index
+                    best_value = value
 
 
-        return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+            return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+
+        except Exception:
+            print X
+            traceback.print_exc()
+            exit()
 
 
     def predict(self, X):
