@@ -32,41 +32,48 @@ class Splitter():
 
 
     @staticmethod
-    def split_quantitative(x, y, impurity):
-
+    def split_quantitative(x, y, impurity, steps=100):
+        """
+        Функция делит количественную переменную так, чтобы разделение приводило к максимальному уменьшению импюрити
+        :param x: столбец признака
+        :param y: столбец целевой функции
+        :param impurity: объект-наследний класса Impurity
+        :param steps: количество шагов. Если None, то просмотреть все объекты в отдельности
+        :return: возвращает лучшее разделение и знаение импюрити
+        """
         max_impurity = -1
         best_value = 0
 
-        """
-        argsort = x.argsort()
-        x = x[argsort]
-        y = y[argsort]
+        if steps is None:
+            argsort = x.argsort()
+            x = x[argsort]
+            y = y[argsort]
 
 
-        for value in x:
-            y_left = y[x<=value]
-            y_right = y[x>value]
+            for value in x:
+                y_left = y[x<=value]
+                y_right = y[x>value]
 
-            imp = impurity.calculate_split(y_left, y_right)
+                imp = impurity.calculate_split(y_left, y_right)
 
-            if imp > max_impurity:
-                max_impurity = imp
-                best_value = value
-        """
-        current = min(x)
-        end = max(x)
-        step = float(end-current)/30
+                if imp > max_impurity:
+                    max_impurity = imp
+                    best_value = value
+        else:
+            current = min(x)
+            end = max(x)
+            step = float(end-current)/steps
 
-        while (current < end):
-            y_left = y[x<=current]
-            y_right = y[x>current]
+            while (current < end):
+                y_left = y[x<=current]
+                y_right = y[x>current]
 
-            imp = impurity.calculate_split(y_left, y_right)
+                imp = impurity.calculate_split(y_left, y_right)
 
-            if imp > max_impurity:
-                max_impurity = imp
-                best_value = current
+                if imp > max_impurity:
+                    max_impurity = imp
+                    best_value = current
 
-            current += step
+                current += step
 
         return best_value, max_impurity
