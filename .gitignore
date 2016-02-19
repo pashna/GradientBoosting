@@ -56,7 +56,7 @@ docs/_build/
 # PyBuilder
 target/
 
-data*
+#data*
 idea*
 .idea/*
 .ipynb_checkpoints*
