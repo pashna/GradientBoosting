@@ -14,7 +14,7 @@ from Splitter import Splitter
 
 class DecisionTree():
 
-    def __init__(self, is_classification=True, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100):
+    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100):
         """
         Моя собственная, любимая реализация CART
         :param is_classification: True, если задача классификации,
@@ -33,6 +33,7 @@ class DecisionTree():
         self._max_features = max_features
         self._min_impurity = min_impurity
         self._max_steps = max_steps
+        self._max_depth = max_depth
 
         if self._is_classification:
             if impurity is None:
@@ -55,28 +56,27 @@ class DecisionTree():
 
     def _build_tree(self, X, y):
 
-        if not self._is_stop_criterion(y) > 0:
+        depth = 1
+        if not self._is_stop_criterion(y, depth) > 0:
             predicate = self.select_predicate(X, y)
             self._root = Node(predicate=predicate)
 
             X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
-            self._root.left_node = self._create_node(X_left, y_left)
-            self._root.right_node = self._create_node(X_right, y_right)
+            self._root.left_node = self._create_node(X_left, y_left, depth=depth+1)
+            self._root.right_node = self._create_node(X_right, y_right, depth=depth+1)
         else:
             self._root = Node(is_leaf=True, value=y[0])
 
 
-    def _create_node(self, X, y):
+    def _create_node(self, X, y, depth):
         """
         Построение дерева
         :param X:
         :param y:
         """
 
-        if not self._is_stop_criterion(y):
-            #print "select_predicate started"
+        if not self._is_stop_criterion(y, depth):
             predicate = self.select_predicate(X, y)
-            #print "select_predicate stoped"
             node = Node(predicate=predicate)
             X_left, y_left, X_right, y_right = node.predicate.split_by_predicate(X, y)
 
@@ -88,8 +88,8 @@ class DecisionTree():
                 value = self._select_leaf_value(y)
                 return Node(predicate=None, is_leaf=True, value=value)
 
-            node.left_node = self._create_node(X_left, y_left)
-            node.right_node = self._create_node(X_right, y_right)
+            node.left_node = self._create_node(X_left, y_left, depth=depth+1)
+            node.right_node = self._create_node(X_right, y_right, depth+1)
 
             return node
         else:
@@ -111,7 +111,7 @@ class DecisionTree():
 
         return value
 
-    def _is_stop_criterion(self, y):
+    def _is_stop_criterion(self, y, depth):
         """
         Критерий останова.
         Пока прос
@@ -119,7 +119,8 @@ class DecisionTree():
         :return:
         """
         return self._impurity.calculate_node(y) < self._min_impurity or \
-                len(y) < self._min_samples_leaf
+                len(y) < self._min_samples_leaf or \
+                depth > self._max_depth
 
 
     def select_predicate(self, X, y):

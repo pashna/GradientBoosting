@@ -8,13 +8,14 @@ from DecisionTree import DecisionTree
 class GradientBoosting():
 
 
-    def __init__(self, n_estimators=10, shrinkage=0.05, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100):
+    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100):
         # Boosting Parameters
         self._n_estimators = n_estimators#-1 ???
         self._estimators = []
         self._shrinkage = shrinkage
 
         # Tree Parameters
+        self._max_depth = max_depth
         self._impurity = impurity
         self._min_samples_leaf = min_samples_leaf
         self._max_features = max_features
@@ -28,7 +29,7 @@ class GradientBoosting():
 
         for i in range(self._n_estimators):
             anti_grad = self.calculate_antigradient(X, y)
-            estimator = DecisionTree(is_classification=False, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps)
+            estimator = DecisionTree(is_classification=False, max_depth=self._max_depth, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps)
             estimator.fit(X, anti_grad)
             self._estimators.append(estimator)
 

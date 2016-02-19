@@ -55,7 +55,7 @@ else:
     x_test = df_test[df_test.columns[1:]].as_matrix()
     y_test = df_test[df_test.columns[0]].as_matrix()
 
-boosting = GradientBoosting(n_estimators=5)
+boosting = GradientBoosting(n_estimators=5, max_depth=2)
 boosting.fit(x_train, y_train)
 y_predicted = boosting.predict(x_test)
 print mse(y_test, y_predicted)
