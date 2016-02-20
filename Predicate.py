@@ -47,6 +47,7 @@ class Predicate():
         :param y:
         :return:
         """
+
         x = X[:,self.feature_id]
         if self.type == Predicate.QUAN:
             #если признак количественный

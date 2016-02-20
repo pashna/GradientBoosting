@@ -4,6 +4,7 @@ __author__ = 'popka'
 
 import numpy as np
 from DecisionTree import DecisionTree
+#from sklearn.tree import DecisionTreeRegressor as DecisionTree
 
 class GradientBoosting():
 
@@ -31,7 +32,7 @@ class GradientBoosting():
 
         for i in range(self._n_estimators):
             anti_grad = self.calculate_antigradient(X, y)
-            estimator = DecisionTree(is_classification=False, max_depth=self._max_depth, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps, rsm=self._rsm)
+            estimator = DecisionTree(max_depth=self._max_depth, is_classification=False, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps, rsm=self._rsm)
             estimator.fit(X, anti_grad)
             self._estimators.append(estimator)
 
@@ -66,12 +67,7 @@ class GradientBoosting():
         #self._y_mean = np.mean(y)
         self._first_estimator = DecisionTree(is_classification=False, rsm=False, max_depth=3)
         self._first_estimator.fit(X, y)
-        self._b.append(1)
-
-
-    #def calculate_b(self, X, y, estimator):
-
-
+        #self._b.append(1)
 
 
     def _get_h_0(self, X):

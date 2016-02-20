@@ -65,11 +65,10 @@ class Splitter():
             end = max(x)
             step = float(end-current)/steps
             current += step
-
-            while (current < end-steps-1e-10):
+            # 1.1 только, чтобы оставался в конце хотя бы один элемент. Т.е. Значение было больше одного шага и меньше двух шагов
+            while (current < end-step*1.1):
                 y_left = y[x<=current]
                 y_right = y[x>current]
-                print len(y_left), len(y_right)
                 imp = impurity.calculate_split(y_left, y_right)
 
                 if imp > max_impurity:

@@ -10,6 +10,7 @@ from Impurity.Gini import Gini
 from Impurity.RegressionImpurity import RegressionImpurity
 from Node import Node
 from Splitter import Splitter
+import traceback
 
 
 class DecisionTree():
@@ -56,12 +57,10 @@ class DecisionTree():
 
 
     def _build_tree(self, X, y):
-
         depth = 1
         if not self._is_stop_criterion(y, depth) > 0:
             predicate = self.select_predicate(X, y)
             self._root = Node(predicate=predicate)
-
             X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
             self._root.left_node = self._create_node(X_left, y_left, depth=depth+1)
             self._root.right_node = self._create_node(X_right, y_right, depth=depth+1)
@@ -89,10 +88,8 @@ class DecisionTree():
 
                 value = self._select_leaf_value(y)
                 return Node(predicate=None, is_leaf=True, value=value)
-
             node.left_node = self._create_node(X_left, y_left, depth=depth+1)
             node.right_node = self._create_node(X_right, y_right, depth+1)
-
             return node
         else:
 
@@ -114,6 +111,7 @@ class DecisionTree():
 
             return value
         except Exception:
+            traceback.print_exc()
             print y
 
     def _is_stop_criterion(self, y, depth):
@@ -153,13 +151,12 @@ class DecisionTree():
                 type = Predicate.QUAN
                 value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity, steps=self._max_steps)
 
-
             if max_delta_impurity < delta_impurity:
                 max_delta_impurity = delta_impurity
                 best_feature_index = feature_index
                 best_value = value
 
-            return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+        return Predicate(type=type, feature_id=best_feature_index, value=best_value)
 
 
 
