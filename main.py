@@ -15,12 +15,12 @@ from GradientBoosting import GradientBoosting
 
 FOLDER = "data/"
 FILES = [
-        "iris.txt", "bezdekIris.txt", "wine.txt", "bupa.txt", "housing.txt", "spam"
+        "iris.txt", "bezdekIris.txt", "wine.txt", "bupa.txt", "housing.txt", "auto-mpg.txt", "spam"
         ]
-FILE = "housing.txt"
+FILE = "auto-mpg.txt"
 
 # Подготавливаем признаки и целевую функцию
-if FILE in FILES[:5]:
+if FILE in FILES[:6]:
 
     df = pd.read_csv(FOLDER+FILE, sep=",", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
 
@@ -44,6 +44,11 @@ if FILE in FILES[:5]:
         X = df[df.columns[1:]].as_matrix()
         y = df[df.columns[0]].as_matrix()
 
+    if FILE == FILES[5]:
+        df = pd.read_csv(FOLDER+FILE, sep=" ", header=None)#, encoding="utf-8", quoting=csv.QUOTE_NONNUMERIC)
+        X = df[df.columns[1:-1]].as_matrix()
+        y = df[df.columns[0]].as_matrix()
+
     x_train, x_test, y_train, y_test = cv.train_test_split(X, y, test_size=0.25)
 
 else:
@@ -55,7 +60,13 @@ else:
     x_test = df_test[df_test.columns[1:]].as_matrix()
     y_test = df_test[df_test.columns[0]].as_matrix()
 
-boosting = GradientBoosting(n_estimators=5, max_depth=2)
-boosting.fit(x_train, y_train)
-y_predicted = boosting.predict(x_test)
+"""
+my_gb = GradientBoosting(n_estimators=0, max_depth=4, shrinkage=0, max_steps=None, rsm=False)
+my_gb.fit(x_train, y_train)
+y_predicted = my_gb.predict(x_test)
+print mse(y_test, y_predicted)
+"""
+my_tree = DecisionTree(is_classification=False, max_features=len(x_train[0]), max_steps=None)
+my_tree.fit(x_train, y_train)
+y_predicted = my_tree.predict(x_test)
 print mse(y_test, y_predicted)

@@ -14,7 +14,7 @@ from Splitter import Splitter
 
 class DecisionTree():
 
-    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100):
+    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100, rsm=True):
         """
         Моя собственная, любимая реализация CART
         :param is_classification: True, если задача классификации,
@@ -34,6 +34,7 @@ class DecisionTree():
         self._min_impurity = min_impurity
         self._max_steps = max_steps
         self._max_depth = max_depth
+        self._rsm = rsm
 
         if self._is_classification:
             if impurity is None:
@@ -85,6 +86,7 @@ class DecisionTree():
                 Если оптимальным считается разделить узел так, что в одной части будут значения, а в другой - нет
                 (это может случится, когда все значения признака одинаковые), считаем, что это лист
                 """
+
                 value = self._select_leaf_value(y)
                 return Node(predicate=None, is_leaf=True, value=value)
 
@@ -103,13 +105,16 @@ class DecisionTree():
         Функция вычисляет и возвращает значение, которое будет находиться в листе
         :param y:
         """
-        if self._is_classification:
-            counts = np.bincount(y)
-            value = np.argmax(counts)
-        else:
-            value = np.mean(y)
+        try:
+            if self._is_classification:
+                counts = np.bincount(y)
+                value = np.argmax(counts)
+            else:
+                value = np.mean(y)
 
-        return value
+            return value
+        except Exception:
+            print y
 
     def _is_stop_criterion(self, y, depth):
         """
@@ -118,9 +123,9 @@ class DecisionTree():
         :param y:
         :return:
         """
-        return self._impurity.calculate_node(y) < self._min_impurity or \
-                len(y) < self._min_samples_leaf or \
-                depth > self._max_depth
+        return len(y) < self._min_samples_leaf or \
+                depth > self._max_depth# or
+                #self._impurity.calculate_node(y) < self._min_impurity
 
 
     def select_predicate(self, X, y):
@@ -130,8 +135,11 @@ class DecisionTree():
         :param y:
         :return:
         """
+        if (self._rsm):
+            feature_indexes = DecisionTree.get_rsm_features(min(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
+        else:
+            feature_indexes = np.asarray([i for i in range(len(X[0]))])
 
-        feature_indexes = DecisionTree.rsm(min(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
         max_delta_impurity = None
 
         for feature_index in feature_indexes:
@@ -199,7 +207,7 @@ class DecisionTree():
 
 
     @staticmethod
-    def rsm(feature_count):
+    def get_rsm_features(feature_count):
         """
         Функция релизует random subspace method - возвращает массив случайной длины со случайными значениями, не превосходящими feature_count
         :param feature_count:

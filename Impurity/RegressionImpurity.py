@@ -27,10 +27,9 @@ class RegressionImpurity(Impurity):
         :param y:
         :return:
         """
-
         mean = np.mean(y)
         diff = y - mean
         diff = diff**2
-        impurity = sum(diff)
+        impurity = sum(diff)/len(y)
 
         return impurity

@@ -50,10 +50,11 @@ class Splitter():
             y = y[argsort]
 
 
-            for value in x:
+            for value in x[:-1]:
                 y_left = y[x<=value]
                 y_right = y[x>value]
-
+                if len(y_right) == 0:
+                    continue
                 imp = impurity.calculate_split(y_left, y_right)
 
                 if imp > max_impurity:
@@ -63,11 +64,12 @@ class Splitter():
             current = min(x)
             end = max(x)
             step = float(end-current)/steps
+            current += step
 
-            while (current < end):
+            while (current < end-steps-1e-10):
                 y_left = y[x<=current]
                 y_right = y[x>current]
-
+                print len(y_left), len(y_right)
                 imp = impurity.calculate_split(y_left, y_right)
 
                 if imp > max_impurity:

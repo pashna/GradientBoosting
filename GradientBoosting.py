@@ -8,10 +8,11 @@ from DecisionTree import DecisionTree
 class GradientBoosting():
 
 
-    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100):
+    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100, rsm=True):
         # Boosting Parameters
         self._n_estimators = n_estimators#-1 ???
         self._estimators = []
+        self._b = []
         self._shrinkage = shrinkage
 
         # Tree Parameters
@@ -21,6 +22,7 @@ class GradientBoosting():
         self._max_features = max_features
         self._min_impurity = min_impurity
         self._max_steps = max_steps
+        self._rsm = rsm
 
 
     def fit(self, X, y):
@@ -29,7 +31,7 @@ class GradientBoosting():
 
         for i in range(self._n_estimators):
             anti_grad = self.calculate_antigradient(X, y)
-            estimator = DecisionTree(is_classification=False, max_depth=self._max_depth, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps)
+            estimator = DecisionTree(is_classification=False, max_depth=self._max_depth, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps, rsm=self._rsm)
             estimator.fit(X, anti_grad)
             self._estimators.append(estimator)
 
@@ -46,7 +48,7 @@ class GradientBoosting():
 
 
     def predict(self, X):
-        y_predicted = self._shrinkage*self._get_h_0(X)
+        y_predicted = self._get_h_0(X)
 
         for estimator in self._estimators:
             y_predicted += self._shrinkage*estimator.predict(X)
@@ -61,8 +63,17 @@ class GradientBoosting():
         :param X:
         :param y:
         """
-        self._y_mean = np.mean(y)
+        #self._y_mean = np.mean(y)
+        self._first_estimator = DecisionTree(is_classification=False, rsm=False, max_depth=3)
+        self._first_estimator.fit(X, y)
+        self._b.append(1)
+
+
+    #def calculate_b(self, X, y, estimator):
+
+
 
 
     def _get_h_0(self, X):
-        return np.asarray([self._y_mean]*len(X))
+        #return np.asarray([self._y_mean]*len(X))
+        return self._first_estimator.predict(X)
