@@ -66,6 +66,22 @@ class DecisionTreeTests(unittest.TestCase):
         self.assertTrue(imp == 50)
 
 
+    def test_regression_impurity_new(self):
+        reg_impurity = RegressionImpurity()
+
+        y = np.asarray([1, 2, 3, 4, 5])
+        imp = reg_impurity.calculate_node(y)
+        self.assertTrue(imp == 10)
+
+        y = np.asarray([1,1,1,1,1])
+        imp = reg_impurity.calculate_node(y)
+        self.assertTrue(imp == 0)
+
+        y = np.asarray([-5, 5])
+        imp = reg_impurity.calculate_node(y)
+        self.assertTrue(imp == 50)
+
+
     def test_regression_impurity_split(self):
         reg_impurity = RegressionImpurity()
 

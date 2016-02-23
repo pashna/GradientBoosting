@@ -61,20 +61,19 @@ else:
     x_test = df_test[df_test.columns[1:]].as_matrix()
     y_test = df_test[df_test.columns[0]].as_matrix()
 
-
-my_gb = GradientBoosting(n_estimators=25, max_depth=4, shrinkage=0.3, max_steps=100, rsm=True)
-my_gb.fit(x_train, y_train)
-y_predicted = my_gb.predict(x_test)
-print mse(y_test, y_predicted)
-
-my_gb = GradientBoostingRegressor(n_estimators=25, max_depth=4)#, shrinkage=0.05, max_steps=100, rsm=True)
-my_gb.fit(x_train, y_train)
-y_predicted = my_gb.predict(x_test)
-print mse(y_test, y_predicted)
-
 """
-my_tree = DecisionTree(is_classification=False, max_features=len(x_train[0]), max_steps=None)
+my_gb = GradientBoosting(n_estimators=20, max_depth=4, shrinkage=0.1, rsm=True)
+my_gb.fit(x_train, y_train)
+y_predicted = my_gb.predict(x_test)
+print mse(y_test, y_predicted)
+
+my_gb = GradientBoostingRegressor(n_estimators=20, max_depth=4, learning_rate=0.1)#, shrinkage=0.05, max_steps=100, rsm=True)
+my_gb.fit(x_train, y_train)
+y_predicted = my_gb.predict(x_test)
+print mse(y_test, y_predicted)
+"""
+
+my_tree = DecisionTree(is_classification=False, rsm=False, max_steps=None)
 my_tree.fit(x_train, y_train)
 y_predicted = my_tree.predict(x_test)
 print mse(y_test, y_predicted)
-"""

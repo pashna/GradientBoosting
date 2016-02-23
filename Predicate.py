@@ -64,3 +64,7 @@ class Predicate():
         y_right = y[np.invert(split_mask)]
 
         return X_left, y_left, X_right, y_right
+
+
+    def print_predicate(self):
+        return "{} predicate. if feature[{}] <= {} -> left".format(self.type, self.feature_id, self.value)

@@ -3,8 +3,8 @@
 __author__ = 'popka'
 
 import numpy as np
-from DecisionTree import DecisionTree
-#from sklearn.tree import DecisionTreeRegressor as DecisionTree
+#from DecisionTree import DecisionTree
+from sklearn.tree import DecisionTreeRegressor as DecisionTree
 
 class GradientBoosting():
 
@@ -32,7 +32,7 @@ class GradientBoosting():
 
         for i in range(self._n_estimators):
             anti_grad = self.calculate_antigradient(X, y)
-            estimator = DecisionTree(max_depth=self._max_depth, is_classification=False, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps, rsm=self._rsm)
+            estimator = DecisionTree(max_depth=self._max_depth)#, is_classification=False, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps, rsm=self._rsm)
             estimator.fit(X, anti_grad)
             self._estimators.append(estimator)
 
@@ -57,6 +57,19 @@ class GradientBoosting():
         return y_predicted
 
 
+    def predict_n(self, X, n):
+        """
+        Функция считает predict по первым n-деревьям
+        :param X:
+        :param n:
+        """
+        y_predicted = self._get_h_0(X)
+
+        for i in range(n):
+            y_predicted += self._shrinkage*self._estimators[i].predict(X)
+
+        return y_predicted
+
     def _initial_approximation(self, X, y):
         """
         Реализует начальное приближение.
@@ -64,12 +77,12 @@ class GradientBoosting():
         :param X:
         :param y:
         """
-        #self._y_mean = np.mean(y)
-        self._first_estimator = DecisionTree(is_classification=False, rsm=False, max_depth=3)
-        self._first_estimator.fit(X, y)
+        self._y_mean = np.mean(y)
+        #self._first_estimator = DecisionTree(max_depth=3)#, is_classification=False, rsm=False)
+        #self._first_estimator.fit(X, y)
         #self._b.append(1)
 
 
     def _get_h_0(self, X):
-        #return np.asarray([self._y_mean]*len(X))
-        return self._first_estimator.predict(X)
+        return np.asarray([self._y_mean]*len(X))
+        #return self._first_estimator.predict(X)

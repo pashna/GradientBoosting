@@ -15,7 +15,7 @@ import traceback
 
 class DecisionTree():
 
-    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100, rsm=True):
+    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=5, min_impurity=0., max_features=15, max_steps=100, rsm=True):
         """
         Моя собственная, любимая реализация CART
         :param is_classification: True, если задача классификации,
@@ -60,6 +60,7 @@ class DecisionTree():
         depth = 1
         if not self._is_stop_criterion(y, depth) > 0:
             predicate = self.select_predicate(X, y)
+            print predicate.print_predicate()
             self._root = Node(predicate=predicate)
             X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
             self._root.left_node = self._create_node(X_left, y_left, depth=depth+1)
@@ -122,8 +123,8 @@ class DecisionTree():
         :return:
         """
         return len(y) < self._min_samples_leaf or \
-                depth > self._max_depth# or
-                #self._impurity.calculate_node(y) < self._min_impurity
+                depth > self._max_depth or \
+                self._impurity.calculate_node(y) <= self._min_impurity
 
 
     def select_predicate(self, X, y):
@@ -149,13 +150,14 @@ class DecisionTree():
 
             else:
                 type = Predicate.QUAN
-                value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity, steps=self._max_steps)
+                value, delta_impurity = self._splitter.split_new_quantitative(x=x, y=y, impurity=self._impurity)
 
             if max_delta_impurity < delta_impurity:
                 max_delta_impurity = delta_impurity
                 best_feature_index = feature_index
                 best_value = value
 
+        print best_feature_index, best_value, delta_impurity
         return Predicate(type=type, feature_id=best_feature_index, value=best_value)
 
 
