@@ -60,7 +60,7 @@ class DecisionTree():
         depth = 1
         if not self._is_stop_criterion(y, depth) > 0:
             predicate = self.select_predicate(X, y)
-            print predicate.print_predicate()
+
             self._root = Node(predicate=predicate)
             X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
             self._root.left_node = self._create_node(X_left, y_left, depth=depth+1)
@@ -150,14 +150,16 @@ class DecisionTree():
 
             else:
                 type = Predicate.QUAN
-                value, delta_impurity = self._splitter.split_new_quantitative(x=x, y=y, impurity=self._impurity)
+                if not self._is_classification:# это нужно, потому что поиск лучшего разбиения оптимизирован только для задачи регрессии
+                    value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
+                else:
+                    value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
 
             if max_delta_impurity < delta_impurity:
                 max_delta_impurity = delta_impurity
                 best_feature_index = feature_index
                 best_value = value
 
-        print best_feature_index, best_value, delta_impurity
         return Predicate(type=type, feature_id=best_feature_index, value=best_value)
 
 

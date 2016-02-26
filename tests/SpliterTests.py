@@ -37,13 +37,13 @@ class SpliterTests(unittest.TestCase):
         x = np.asarray([5., 5., 5, -1, -1, -0.5])
         y = np.asarray([2, 2, 2, 1, 1, 1])
 
-        best_value, max_impurity = splitter.split_new_quantitative(x=x, y=y, impurity=impurity)
+        best_value, max_impurity = splitter.split_quick_quantitative(x=x, y=y, impurity=impurity)
         self.assertTrue(best_value == -0.5)
 
         x = np.asarray([1., 2., 5, -1, -2, -3])
         y = np.asarray([2.2, 2.5, 2.1, 1, 2.2, 2.1])
 
-        best_value, max_impurity = splitter.split_new_quantitative(x=x, y=y, impurity=impurity)
+        best_value, max_impurity = splitter.split_quick_quantitative(x=x, y=y, impurity=impurity)
         self.assertTrue(best_value == -1)
 
 

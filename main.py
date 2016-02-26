@@ -18,7 +18,7 @@ FOLDER = "data/"
 FILES = [
         "iris.txt", "bezdekIris.txt", "wine.txt", "bupa.txt", "housing.txt", "auto-mpg.txt", "spam"
         ]
-FILE = "spam"
+FILE = "wine.txt"
 
 # Подготавливаем признаки и целевую функцию
 if FILE in FILES[:6]:
@@ -73,7 +73,7 @@ y_predicted = my_gb.predict(x_test)
 print mse(y_test, y_predicted)
 """
 
-my_tree = DecisionTree(is_classification=False, rsm=False, max_steps=None)
+my_tree = DecisionTree(is_classification=True, rsm=True, max_steps=None)
 my_tree.fit(x_train, y_train)
 y_predicted = my_tree.predict(x_test)
 print mse(y_test, y_predicted)

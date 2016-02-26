@@ -83,7 +83,7 @@ class Splitter():
 
 
     @staticmethod
-    def split_new_quantitative(x, y, impurity):
+    def split_quick_quantitative(x, y, impurity):
 
         max_gain = None
         best_value = None
