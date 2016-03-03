@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+
 from Predicate import Predicate
 
 __author__ = 'popka'
@@ -11,11 +13,12 @@ from Impurity.RegressionImpurity import RegressionImpurity
 from Node import Node
 from Splitter import Splitter
 import traceback
+import time
 
 
 class DecisionTree():
 
-    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=5, min_impurity=0., max_features=15, max_steps=100, rsm=True):
+    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=None, max_features=25, min_features=5, max_steps=100, rsm=True):
         """
         Моя собственная, любимая реализация CART
         :param is_classification: True, если задача классификации,
@@ -32,9 +35,13 @@ class DecisionTree():
         self._is_classification = is_classification
         self._min_samples_leaf = min_samples_leaf
         self._max_features = max_features
-        self._min_impurity = min_impurity
+        self._min_features = min_features
         self._max_steps = max_steps
-        self._max_depth = max_depth
+        if max_depth is None:
+            self._max_depth = sys.maxint
+        else:
+            self._max_depth = max_depth
+
         self._rsm = rsm
 
         if self._is_classification:
@@ -59,6 +66,7 @@ class DecisionTree():
     def _build_tree(self, X, y):
         depth = 1
         if not self._is_stop_criterion(y, depth) > 0:
+
             predicate = self.select_predicate(X, y)
 
             self._root = Node(predicate=predicate)
@@ -66,7 +74,7 @@ class DecisionTree():
             self._root.left_node = self._create_node(X_left, y_left, depth=depth+1)
             self._root.right_node = self._create_node(X_right, y_right, depth=depth+1)
         else:
-            self._root = Node(is_leaf=True, value=y[0])
+            self._root = Node(is_leaf=True, value=self._select_leaf_value(y))
 
 
     def _create_node(self, X, y, depth):
@@ -77,7 +85,13 @@ class DecisionTree():
         """
 
         if not self._is_stop_criterion(y, depth):
+
             predicate = self.select_predicate(X, y)
+            if predicate is None:
+                # если не удалось выбрать предикат. Такое может быть если все значения X одинаковы.
+                value = self._select_leaf_value(y)
+                return Node(predicate=None, is_leaf=True, value=value)
+
             node = Node(predicate=predicate)
             X_left, y_left, X_right, y_right = node.predicate.split_by_predicate(X, y)
 
@@ -86,9 +100,9 @@ class DecisionTree():
                 Если оптимальным считается разделить узел так, что в одной части будут значения, а в другой - нет
                 (это может случится, когда все значения признака одинаковые), считаем, что это лист
                 """
-
                 value = self._select_leaf_value(y)
                 return Node(predicate=None, is_leaf=True, value=value)
+
             node.left_node = self._create_node(X_left, y_left, depth=depth+1)
             node.right_node = self._create_node(X_right, y_right, depth+1)
             return node
@@ -122,9 +136,10 @@ class DecisionTree():
         :param y:
         :return:
         """
-        return len(y) < self._min_samples_leaf or \
-                depth > self._max_depth or \
-                self._impurity.calculate_node(y) <= self._min_impurity
+        return depth > self._max_depth or \
+                len(y) < self._min_samples_leaf
+                #depth > self._max_depth# or \
+                #self._impurity.calculate_node(y) <= self._min_impurity
 
 
     def select_predicate(self, X, y):
@@ -135,13 +150,15 @@ class DecisionTree():
         :return:
         """
         if (self._rsm):
-            feature_indexes = DecisionTree.get_rsm_features(min(len(X[0]), self._max_features)) # Массив индексов фичей (какие столбцы будем просматривать)
+            feature_indexes = DecisionTree.get_rsm_features(max(min(X.shape[1], self._max_features), self._min_features)) # Массив индексов фичей (какие столбцы будем просматривать)
         else:
-            feature_indexes = np.asarray([i for i in range(len(X[0]))])
+            feature_indexes = np.asarray([i for i in range(X.shape[1])])
 
         max_delta_impurity = None
+        best_feature_index = None
 
         for feature_index in feature_indexes:
+
             x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
 
             if DecisionTree._is_categorical(x):
@@ -150,17 +167,20 @@ class DecisionTree():
 
             else:
                 type = Predicate.QUAN
-                if not self._is_classification:# это нужно, потому что поиск лучшего разбиения оптимизирован только для задачи регрессии
-                    value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
-                else:
-                    value, delta_impurity = self._splitter.split_quantitative(x=x, y=y, impurity=self._impurity)
+                #if not self._is_classification:# это нужно, потому что поиск лучшего разбиения оптимизирован только для задачи регрессии
+                #    value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
+                #else:
+                value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
 
             if max_delta_impurity < delta_impurity:
                 max_delta_impurity = delta_impurity
                 best_feature_index = feature_index
                 best_value = value
 
-        return Predicate(type=type, feature_id=best_feature_index, value=best_value)
+        if best_feature_index is None:
+            return None # Разделяющая фича не найдена. Например, если все значения фичей одинаковы. Для RSM такое возможно
+
+        return Predicate(type=type, feature_id=best_feature_index, value=best_value, gain=max_delta_impurity)
 
 
 

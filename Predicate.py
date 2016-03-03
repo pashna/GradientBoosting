@@ -7,7 +7,7 @@ class Predicate():
     QUAN = "quantitative"
     TYPES = [QUAN, CAT]
 
-    def __init__(self, type, feature_id, value):
+    def __init__(self, type, feature_id, value, gain):
         """
 
         :param type: тип признака - количественый(вещественное число) или категориальный(конечное множество целых)
@@ -22,6 +22,7 @@ class Predicate():
         self.type = type
         self.feature_id = feature_id
         self.value = value
+        self.gain = gain
 
 
     def operate(self, x):

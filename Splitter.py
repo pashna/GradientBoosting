@@ -119,7 +119,10 @@ class Splitter():
 
                 if gain > max_gain:
                     max_gain = gain
-                    best_value = x[ls.length-1]
+                    best_value = float(x[i]+x[i+1])/2
+
+                if i != ls.length-1:
+                    print "error"
 
         # если не нашли максимального (по сути, когда все значения столбца одинаковы)
         # возвращаем None, None

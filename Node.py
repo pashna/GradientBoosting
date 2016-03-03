@@ -4,7 +4,7 @@ __author__ = 'popka'
 
 class Node():
 
-    def __init__(self, predicate=None, is_leaf=False, value = None):
+    def __init__(self, predicate=None, is_leaf=False, value=None):
         """
         :param predicate: если предикат соотвествует значению объекта, то он пойдет в левый узел, иначе в правый
         """

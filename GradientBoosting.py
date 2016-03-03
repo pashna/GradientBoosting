@@ -3,13 +3,14 @@
 __author__ = 'popka'
 
 import numpy as np
-#from DecisionTree import DecisionTree
-from sklearn.tree import DecisionTreeRegressor as DecisionTree
+from DecisionTree import DecisionTree
+import time
+from sklearn.tree import DecisionTreeRegressor as DecisionTreeSK
 
 class GradientBoosting():
 
 
-    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=5, min_impurity=0.1, max_features=15, max_steps=100, rsm=True):
+    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=None, max_features=25, min_features=5, max_steps=100, rsm=True):
         # Boosting Parameters
         self._n_estimators = n_estimators#-1 ???
         self._estimators = []
@@ -21,9 +22,11 @@ class GradientBoosting():
         self._impurity = impurity
         self._min_samples_leaf = min_samples_leaf
         self._max_features = max_features
-        self._min_impurity = min_impurity
+        self._min_features = min_features
         self._max_steps = max_steps
         self._rsm = rsm
+
+        self._current_predicted = None
 
 
     def fit(self, X, y):
@@ -32,7 +35,7 @@ class GradientBoosting():
 
         for i in range(self._n_estimators):
             anti_grad = self.calculate_antigradient(X, y)
-            estimator = DecisionTree(max_depth=self._max_depth)#, is_classification=False, impurity=self._impurity, min_impurity=self._min_impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, max_steps=self._max_steps, rsm=self._rsm)
+            estimator = DecisionTree(max_depth=self._max_depth, is_classification=False, impurity=self._impurity, min_samples_leaf=self._min_samples_leaf, max_features=self._max_features, min_features=self._min_features, max_steps=self._max_steps, rsm=self._rsm)
             estimator.fit(X, anti_grad)
             self._estimators.append(estimator)
 
@@ -41,11 +44,20 @@ class GradientBoosting():
         """
         Вычисляет антиградиент.
         Для квадратичной функции потерь антиградиент равен y - h(x)
+
         :param X:
         :param y:
         :return:
         """
-        return y - self.predict(X)
+        if self._current_predicted is not None:
+            self._current_predicted += self._shrinkage * self._estimators[len(self._estimators) - 1].predict(X)
+
+        else:
+            self._current_predicted = self.predict(X)
+
+        q = y - self._current_predicted
+        #q = q/np.absolute(q)
+        return q
 
 
     def predict(self, X):
