@@ -61,24 +61,25 @@ else:
     x_test = df_test[df_test.columns[1:]].as_matrix()
     y_test = df_test[df_test.columns[0]].as_matrix()
 
-"""
-my_gb = GradientBoosting(n_estimators=10, max_depth=4, shrinkage=0.1, rsm=False)
+
+my_gb = GradientBoosting(n_estimators=100, max_depth=4, shrinkage=0.1, rsm=False)
 my_gb.fit(x_train, y_train)
 y_predicted = my_gb.predict(x_test)
 print mse(y_test, y_predicted)
 
+"""
 my_gb = GradientBoostingRegressor(n_estimators=10, max_depth=4, learning_rate=0.1)
 my_gb.fit(x_train, y_train)
 y_predicted = my_gb.predict(x_test)
 print mse(y_test, y_predicted)
-"""
-my_tree = DecisionTree(is_classification=False, rsm=False, max_depth=None, min_samples_leaf=5000)
+
+my_tree = DecisionTree(is_classification=False, rsm=False, max_depth=5)
 my_tree.fit(x_train, y_train)
 y_predicted = my_tree.predict(x_test)
 
 print mse(y_test, y_predicted)
 print mse(y_test, [np.mean(y_train)]*len(y_test))
-"""
+
 my_tree = DecisionTree(is_classification=True, rsm=True, max_steps=None)
 my_tree.fit(x_train, y_train)
 y_predicted = my_tree.predict(x_test)

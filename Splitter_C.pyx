@@ -5,8 +5,10 @@ import cython
 __author__ = 'popka'
 from utils.Placement import Placement
 import numpy as np
+cimport numpy as np
 from math import fabs
 import time
+from Impurity.RegressionImpurity import RegressionImpurity
 
 
 class Splitter():
@@ -83,48 +85,45 @@ class Splitter():
 
         return best_value, max_impurity
 
-
+    #np.ndarray[np.float64_t, ndim=1]
     @staticmethod
     def split_quick_quantitative(x, y, impurity):
 
-        max_gain = None
-        best_value = None
+        cdef float max_gain = -1
+        cdef float best_value = -1
 
-        argsort = x.argsort()
+        cdef np.ndarray[np.longlong_t, ndim=1] argsort = x.argsort()
         x = x[argsort]
         y = y[argsort]
 
-        imp_full = impurity.calculate_node(y)
-        length = len(y)
+        cdef float imp_full = impurity.calculate_node(y)
+        cdef int length = len(y)
 
         #rs - right_split
-        rs = Split(np.mean(y[1:]), imp_full, impurity.calculate_node(y[1:]), len(y)-1)
+        cdef Split rs = Split(np.mean(y[1:]), imp_full, impurity.calculate_node(y[1:]), len(y)-1)
 
         #ls - left_split
-        ls = Split(y[0], 0, 0, 1)
-
+        cdef Split ls = Split(y[0], 0, 0, 1)
 
         for i in range(1, len(y)-1):
 
             rs.prev_mean = rs.mean
             rs.mean = (rs.length*rs.mean - y[i])/(rs.length-1)
-            rs.var = ((rs.var*rs.length-(y[i]-rs.mean)*(y[i]-rs.prev_mean))/(rs.length-1))
+            rs.var = fabs((rs.var*rs.length-(y[i]-rs.mean)*(y[i]-rs.prev_mean))/(rs.length-1))
             rs.length -= 1.
 
             ls.length += 1.
             ls.prev_mean = ls.mean
             ls.mean = ls.prev_mean+(y[i]-ls.prev_mean)/ls.length
-            ls.var = (((ls.length-1)*ls.var + (y[i]-ls.prev_mean)*(y[i]-ls.mean))/ls.length)
+            ls.var = fabs(((ls.length-1)*ls.var + (y[i]-ls.prev_mean)*(y[i]-ls.mean))/ls.length)
+
 
             if (x[i+1]!=x[i]):
                 gain = imp_full - rs.var*rs.length/length - ls.var*ls.length/length
 
                 if gain > max_gain:
                     max_gain = gain
-                    best_value = float(x[i]+x[i+1])/2
-
-                if i != ls.length-1:
-                    print "error"
+                    best_value = (x[i]+x[i+1])/2.
 
 
         # если не нашли максимального (по сути, когда все значения столбца одинаковы)
@@ -133,10 +132,12 @@ class Splitter():
 
 
 
-class Split():
+cdef class Split:
 
-    def __init__(self, mean, prev_mean, var, length):
-        self.mean = float(mean)
-        self.prev_mean = float(prev_mean)
-        self.var = float(var)
-        self.length = float(length)
+    cdef public float mean, prev_mean, var, length
+
+    def __init__(self, float mean, float prev_mean, float var, float length):
+        self.mean = mean
+        self.prev_mean = prev_mean
+        self.var = var
+        self.length = length

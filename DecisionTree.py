@@ -15,10 +15,12 @@ from Splitter import Splitter
 import traceback
 import time
 
+from Splitter_C import Splitter
+
 
 class DecisionTree():
 
-    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=None, max_features=25, min_features=5, max_steps=100, rsm=True):
+    def __init__(self, is_classification=True, impurity=None, max_depth=10, min_samples_leaf=1, max_features=25, min_features=5, max_steps=100, rsm=True):
         """
         Моя собственная, любимая реализация CART
         :param is_classification: True, если задача классификации,
@@ -58,8 +60,8 @@ class DecisionTree():
 
     def fit(self, X_, y_):
 
-        y = np.copy(np.asarray(y_))
-        X = np.copy(np.matrix(X_))
+        y = np.copy(np.asarray(y_, dtype=float))
+        X = np.copy(np.matrix(X_, dtype=float))
         self._build_tree(X, y)
 
 
@@ -68,7 +70,6 @@ class DecisionTree():
         if not self._is_stop_criterion(y, depth) > 0:
 
             predicate = self.select_predicate(X, y)
-
             self._root = Node(predicate=predicate)
             X_left, y_left, X_right, y_right = self._root.predicate.split_by_predicate(X, y)
             self._root.left_node = self._create_node(X_left, y_left, depth=depth+1)
@@ -86,13 +87,16 @@ class DecisionTree():
 
         if not self._is_stop_criterion(y, depth):
 
+
             predicate = self.select_predicate(X, y)
+
             if predicate is None:
                 # если не удалось выбрать предикат. Такое может быть если все значения X одинаковы.
                 value = self._select_leaf_value(y)
                 return Node(predicate=None, is_leaf=True, value=value)
 
             node = Node(predicate=predicate)
+
             X_left, y_left, X_right, y_right = node.predicate.split_by_predicate(X, y)
 
             if len(y_left) == 0 or len(y_right) == 0:
@@ -161,16 +165,16 @@ class DecisionTree():
 
             x = X[:,feature_index] # Столбец значений фичи (значения фичи для всех объектов)
 
+            """
+            Заккоментирую, чтобы работало быстрее
             if DecisionTree._is_categorical(x):
                 type = Predicate.CAT
                 value, delta_impurity = self._splitter.split_categorial(x=x, y=y, impurity=self._impurity)
 
             else:
-                type = Predicate.QUAN
-                #if not self._is_classification:# это нужно, потому что поиск лучшего разбиения оптимизирован только для задачи регрессии
-                #    value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
-                #else:
-                value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
+            """
+            type = Predicate.QUAN
+            value, delta_impurity = self._splitter.split_quick_quantitative(x=x, y=y, impurity=self._impurity)
 
             if max_delta_impurity < delta_impurity:
                 max_delta_impurity = delta_impurity

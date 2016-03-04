@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeRegressor as DecisionTreeSK
 class GradientBoosting():
 
 
-    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=None, max_features=25, min_features=5, max_steps=100, rsm=True):
+    def __init__(self, n_estimators=10, shrinkage=0.05, max_depth=10, impurity=None, min_samples_leaf=1, max_features=25, min_features=5, max_steps=100, rsm=True):
         # Boosting Parameters
         self._n_estimators = n_estimators#-1 ???
         self._estimators = []
