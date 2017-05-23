@@ -11,3 +11,5 @@ Moreover, the model allows you to use your own:
 * Custom **node purity** for decision tree (must be inherited from Abstract class). Gini and Entropy are built-in.
 
 File Boosting.ipynb shows that this algorithm **works better than Sklearn's** on the given datasets with the same parameters.
+
+Since python code works incredibly slow, the implimentation uses [Cython](http://cython.org/) in the most critical functions which gives a huge jump in speed.
